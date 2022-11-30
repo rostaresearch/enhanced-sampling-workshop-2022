@@ -1,31 +1,7 @@
 import os
 import numpy as np
-import numba
 import jax
 import matplotlib.pyplot as plt
-from time import time
-
-
-def sum_Fx(expFx_old, sim):
-    denom = np.sum(expFx_old * sim)
-    if denom > 0:
-        denom = 1 / denom
-    else:
-        denom = 0
-    return denom * sim
-
-
-def mult_3d_1d(A, B):
-    C = np.empty(shape=A.shape)
-    m, n, o = A.shape
-    for i in range(m):
-        for j in range(n):
-            for k in range(o):
-                C[i, j, k] = A[i, j, k] * B[k]
-    return C
-
-
-numba_mult = numba.jit(numba.float64[:, :, :](numba.float64[:, :, :], numba.float64[:]), nopython=True)(mult_3d_1d)
 
 
 @jax.jit
@@ -44,7 +20,23 @@ def create_bins(q, numbins):
     return np.linspace(v_min, v_max, numbins)
 
 
+def cnt_pop(qep, qspace, denom, numsims, numbins=50):
+    b = np.digitize(qep, qspace) - 1
+    # P = np.empty(shape=numbins)
+    PpS = np.empty(shape=(numsims, numbins))
+    for i in range(numbins):
+        md = np.ma.masked_array(denom, mask=~(b == i))
+        # P[i] = np.ma.sum(md)
+        PpS[:, i] = np.ma.sum(md, axis=1)
+    P = np.sum(PpS, axis=0)
+    return P, PpS
+
+
 class WHAM:
+    """
+    data is 3D: (number of sims, points per sims, number of colvars)
+    kval and constr_val are 2D: (number of sims, number of colvars)
+    """
     skip = 10
     KbT = 0.001987204259 * 300  # energy unit: kcal/mol
     data = None
@@ -53,6 +45,7 @@ class WHAM:
     winsize = None
     UB = None
     Fprog = None
+    denom = None
 
     def __init__(self, path):
         self.path = path
@@ -95,25 +88,6 @@ class WHAM:
         self.winsize = winsize
         return
 
-    def calculate_UB(self):
-        """
-        deprecated
-        :return:
-        """
-        numsims = self.data.shape[0]
-        datlength = self.data.shape[1]
-
-        UB = np.empty(shape=(numsims * numsims * datlength), dtype=np.float_)
-        kk = 0
-        for i in range(numsims):
-            for j in range(datlength):
-                UB[kk:kk + numsims] = np.exp(
-                   -np.sum(0.5 * self.k_val[:, :] * np.square(self.constr_val[:, :] - self.data[i, j, :]),
-                           axis=1) / self.KbT)
-                kk += numsims
-        self.UB = UB
-        return
-
     def calculate_UB3d(self):
         numsims = self.data.shape[0]
         datlength = self.data.shape[1]
@@ -129,7 +103,6 @@ class WHAM:
 
     def converge(self, threshold=0.01):
         if self.UB is None:
-            # self.calculate_UB()
             self.calculate_UB3d()
         numsims = self.data.shape[0]
         datlength = self.data.shape[1]
@@ -143,31 +116,34 @@ class WHAM:
 
         while change > threshold:
             expFx_old = datlength * np.exp(Fx_old / self.KbT)
-            # t1 = time()
-            # a = self.UB3d * expFx_old
-            # a = numba_mult(self.UB3d, expFx_old)
             a = jax_mult(self.UB3d, expFx_old)
-            # t2 = time()
             sum = np.sum(a, axis=2)
-            # t3 = time()
             denom = np.divide(1, sum, where=sum != 0)
-            # Fxf = np.zeros(shape=self.UB3d.shape, dtype=np.float_)
-            # t5 = time()
-            # Fxf = self.UB3d * denom[:, :, None]
             Fxf = jax_mult_broadcast(self.UB3d, denom[:, :, None])
-            # t6 = time()
             Fx = np.sum(Fxf, axis=(0, 1))
-            # t7 = time()
             Fx = -self.KbT * np.log(Fx)
             Fx -= Fx[-1]
             Fx_old = Fx
             Fprog.append(Fx)
             if len(Fprog) > 1:
                 change = np.max(np.abs(Fprog[-2][1:] - Fprog[-1][1:]))
-            # print(t2 - t1, t3 - t2, t6 - t5, t7 - t6)
             print(change)
         self.Fprog = Fprog
         return
+
+    def project_1d(self, cv, numbins_q=50):
+        numsims = self.data.shape[0]
+        qep = np.sum(self.data * cv, axis=2)
+        qspace12 = create_bins(qep, numbins_q)
+        if self.denom is None:
+            self.calc_denom()
+        P, PpS = cnt_pop(qep, qspace12, self.denom, numsims=numsims, numbins=numbins_q)
+        rUep = -self.KbT * np.log(P)
+        valu = np.min(rUep[:int(numbins_q/2)])
+        self.rUep = rUep - valu
+        self.rUepPerSim = -self.KbT * np.log(PpS) - valu
+        self.qspace12 = qspace12
+        return -np.max(self.rUep)
 
     def project_2d(self, cv, numbins_q=50):
         numsims = self.data.shape[0]
@@ -216,4 +192,16 @@ class WHAM:
         plt.title(title)
         # plt.show()
         plt.savefig()
+        return
+
+    def calc_denom(self):
+        numsims = self.data.shape[0]
+        datlength = self.data.shape[1]
+        d = np.zeros(shape=(numsims, datlength))
+        for i in range(numsims):
+            for j in range(datlength):
+                Ubias = np.sum(0.5 * self.k_val[:, :] * np.square(self.constr_val[:, :] - self.data[i, j, :]), axis=1)
+                denom = np.sum(datlength * np.exp((self.Fprog[-1] - Ubias) / self.KbT))
+                d[i, j] = 1 / denom
+        self.denom = d
         return
