@@ -1,15 +1,15 @@
 import os
 import numpy as np
-import jax
+#import jax
 import matplotlib.pyplot as plt
 
 
-@jax.jit
+#@jax.jit
 def jax_mult(A, B):
     return A * B
 
 
-@jax.jit
+#@jax.jit
 def jax_mult_broadcast(A, B):
     return A * B
 
