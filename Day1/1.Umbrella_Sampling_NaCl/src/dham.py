@@ -92,12 +92,13 @@ class DHAM:
             MM[:, :] = sumtr / np.sum(sumtr, axis=1)[:, None]
         return MM
 
-    def run(self, plot=True, adjust=True, biased=False):
+    def run(self, plot=True, adjust=True, biased=False, conversion=5E12):
         """
 
         :param plot:
         :param adjust:
         :param biased:
+        :param conversion: from timestep to seconds
         :return:
         """
         v_min = np.nanmin(self.data) - self.epsilon
@@ -110,15 +111,18 @@ class DHAM:
         d, v = eig(np.transpose(MM))
         mpeq = v[:, np.where(d == np.max(d))[0][0]]
         mpeq = mpeq / np.sum(mpeq)
+        rate = np.float_(self.lagtime / np.log(d[np.argsort(d)[-2]])) * conversion
         mU2 = - self.KbT * np.log(mpeq)
         if adjust:
             mU2 -= np.min(mU2[:int(self.numbins / 2)])
+        dG = np.max(mU2[:int(self.numbins / 2)])
+        A = rate / np.exp(- dG / self.KbT)
         x = qspace[:self.numbins] + (qspace[1] - qspace[0])
         if plot:
             plt.plot(x, mU2)
             plt.title("Lagtime={0:d} Nbins={1:d}".format(self.lagtime, self.numbins))
             plt.show()
-        return x, mU2
+        return x, mU2, A
 
     def bootstrap_error(self, size, iter=100, plotall=False, save=None):
         full = self.run(plot=False)

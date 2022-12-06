@@ -127,7 +127,7 @@ class WHAM:
             Fprog.append(Fx)
             if len(Fprog) > 1:
                 change = np.max(np.abs(Fprog[-2][1:] - Fprog[-1][1:]))
-            print(change)
+            # print(change)
         self.Fprog = Fprog
         return
 
