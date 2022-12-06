@@ -28,10 +28,10 @@ def count_transitions(b, numbins, lagtime, endpt=None):
                 continue
     sumtr = np.sum(Ntr, axis=0)
     trvec = np.sum(Ntr, axis=2)
-    sym = 0.5 * (sumtr + np.transpose(sumtr))
-    anti = 0.5 * (sumtr - np.transpose(sumtr))
-    print("Degree of symmetry:",
-          (np.linalg.norm(sym) - np.linalg.norm(anti)) / (np.linalg.norm(sym) + np.linalg.norm(anti)))
+    # sym = 0.5 * (sumtr + np.transpose(sumtr))
+    # anti = 0.5 * (sumtr - np.transpose(sumtr))
+    # print("Degree of symmetry:",
+    #       (np.linalg.norm(sym) - np.linalg.norm(anti)) / (np.linalg.norm(sym) + np.linalg.norm(anti)))
     return sumtr, trvec
 
 
@@ -88,6 +88,7 @@ class DHAM:
                             if trvec[k, i] > 0:
                                 sump1 += trvec[k, i] * np.exp(-(u[j] - u[i]) / 2)
                         MM[i, j] = sumtr[i, j] / sump1
+            MM = MM / np.sum(MM, axis=1)[:, None]
         else:
             MM[:, :] = sumtr / np.sum(sumtr, axis=1)[:, None]
         return MM
@@ -111,7 +112,7 @@ class DHAM:
         d, v = eig(np.transpose(MM))
         mpeq = v[:, np.where(d == np.max(d))[0][0]]
         mpeq = mpeq / np.sum(mpeq)
-        rate = np.float_(self.lagtime / np.log(d[np.argsort(d)[-2]])) * conversion
+        rate = np.float_(- self.lagtime / np.log(d[np.argsort(d)[-2]])) * conversion
         mU2 = - self.KbT * np.log(mpeq)
         if adjust:
             mU2 -= np.min(mU2[:int(self.numbins / 2)])
