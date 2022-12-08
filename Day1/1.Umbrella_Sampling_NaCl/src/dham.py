@@ -50,28 +50,11 @@ class DHAM:
     def __init__(self):
         return
 
-    def read(self, pattern, col=None, plot=False):
-        list = glob(pattern)
-        dat = []
-        if plot:
-            f, a = plt.subplots()
-        for l in list:
-            if col is None:
-                dat.append(np.loadtxt(l))
-            else:
-                dat.append(np.loadtxt(l)[:, col])
-            if plot:
-                a.plot(range(dat[-1].shape[0]), dat[-1])
-        self.datlength = [len(x) for x in dat]
-        if min(self.datlength) == max(self.datlength):
-            self.data = np.array(dat)
-        else:
-            self.data = np.empty(shape=(len(dat), max(self.datlength)))
-            self.data[:] = np.nan
-            for i in range(len(dat)):
-                self.data[i][0:self.datlength[i]] = dat[i]
-        if plot:
-            plt.show()
+    def setup(self, dist, T, K, centres):
+        self.data = dist
+        self.KbT = 0.001987204259 * T
+        self.k_val = np.array(K)
+        self.constr_val = np.array(centres)
         return
 
     def build_MM(self, sumtr, trvec, biased=False):
