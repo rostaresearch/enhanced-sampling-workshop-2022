@@ -1,0 +1,7 @@
+MODEL        0
+ATOM      1 SOD  SOD A 130       9.177  12.820  13.543  1.00  0.00      HETANa  
+TER       2      SOD A 130
+ATOM      3 CLA  CLA B 132      15.633  12.253  13.165  1.00  0.00      HETBCl  
+TER       4      CLA B 132
+ENDMDL
+END
