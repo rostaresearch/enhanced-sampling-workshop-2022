@@ -47,45 +47,23 @@ class WHAM:
     Fprog = None
     denom = None
 
-    def __init__(self, path):
-        self.path = path
+    def __init__(self):
+        self.path = os.getcwd()
         return
 
-    def read(self, strings=range(2, 9)):
-        coor = None
-        force = None
-        data = None
-        winsize = []
-        for s in strings:
-            # For string #s the constraints are in allconstr_{s-1}
-            # the data is in coll_win{s}
-            actcoor = np.loadtxt(os.path.join(self.path, "allconstr_{:d}.dat".format(s - 1)))
-            actforce = np.loadtxt(os.path.join(self.path, "force.dat"))
-            if actforce.shape != actcoor.shape:
-                print("WARNING")
-            winsize.append(actcoor.shape[0])
-            if coor is None:
-                coor = actcoor
-            else:
-                coor = np.append(coor, actcoor, axis=0)
-            if force is None:
-                force = actforce
-            else:
-                force = np.append(force, actforce, axis=0)
-            sdata = []
-            for d in range(1, winsize[-1]+1):
-                u = np.loadtxt(os.path.join(self.path, "coll_win_{:d}".format(s),
-                                            "data{:d}".format(d)))
-                sdata.append(u[self.skip:, :])
-            sdata = np.array(sdata)
-            if data is None:
-                data = sdata
-            else:
-                data = np.append(data, sdata, axis=0)
-        self.data = data
-        self.k_val = force
-        self.constr_val = coor
-        self.winsize = winsize
+    def setup(self, dist, T, K, centres):
+        if len(dist.shape) == 2:
+            self.data = dist.reshape((dist.shape[0], dist.shape[1], 1))
+            self.k_val = np.array(K).reshape((dist.shape[0], 1))
+            self.constr_val = np.array(centres).reshape((dist.shape[0], 1))
+        elif len(dist.shape) == 3:
+            self.data = dist
+            self.k_val = np.array(K)
+            self.constr_val = np.array(centres)
+        else:
+            raise TypeError("data is not in the right format")
+        self.skip = int(dist.shape[1] * 0.1)
+        self.KbT = 0.001987204259 * T
         return
 
     def calculate_UB3d(self):
@@ -127,7 +105,7 @@ class WHAM:
             Fprog.append(Fx)
             if len(Fprog) > 1:
                 change = np.max(np.abs(Fprog[-2][1:] - Fprog[-1][1:]))
-            print(change)
+            # print(change)
         self.Fprog = Fprog
         return
 
@@ -143,7 +121,7 @@ class WHAM:
         self.rUep = rUep - valu
         self.rUepPerSim = -self.KbT * np.log(PpS) - valu
         self.qspace12 = qspace12
-        return -np.max(self.rUep)
+        return
 
     def project_2d(self, cv, numbins_q=50):
         numsims = self.data.shape[0]
