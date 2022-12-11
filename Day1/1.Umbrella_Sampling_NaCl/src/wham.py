@@ -102,9 +102,14 @@ class WHAM:
             Fx = -self.KbT * np.log(Fx)
             Fx -= Fx[-1]
             Fx_old = Fx
-            Fprog.append(Fx)
             if len(Fprog) > 1:
-                change = np.max(np.abs(Fprog[-2][1:] - Fprog[-1][1:]))
+                change = np.nanmax(np.abs(Fprog[-1][1:] - Fx[1:]))
+            if len(Fprog) > 2:
+                prevchange = np.nanmax(np.abs(Fprog[-2][1:] - Fprog[-1][1:]))
+                if prevchange < change:
+                    print("The iteration started to diverge.")
+                    break
+            Fprog.append(Fx)
             # print(change)
         self.Fprog = Fprog
         return
