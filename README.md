@@ -1,7 +1,5 @@
 # enhanced-sampling-workshop-2022
 
-## Don't forget to update the `requirements.txt` before publishing
-
 ## Getting started
 
 You need python3 and the setup is optimised for anaconda. If you need to install it, you find instructions
