@@ -15,12 +15,12 @@ def Epot(x, y, gamma=0.01):
 
 
 # Generate data on the potential
-def generate_data(n_windows, Nstep, beta, force, last_position, restraint_position, sigma=1, gamma=0.01):
+def generate_data(n_windows, Nstep, T, force, last_position, restraint_position, sigma=1, gamma=0.01):
     """
     Function to generate data for the given number of images (Nimage), steps (Nstep)
 
     """
-
+    beta = beta = 1 / (0.001987204259 * T)
     # Initialize the data array
     data = np.zeros((n_windows, Nstep, 2), dtype=np.float32)
     bias = np.sum(0.5 * force * (last_position - restraint_position) ** 2, axis=0)
