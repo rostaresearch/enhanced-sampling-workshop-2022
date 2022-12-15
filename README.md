@@ -1,9 +1,12 @@
-# enhanced-sampling-workshop-2022
+# Enhanced Sampling Simulation Methods for Thermodynamics, Kinetics, and Pathways
+
+### 19-20 December 2022
+
 
 ## Getting started
 
 You need python3 and the setup is optimised for anaconda. If you need to install it, you find instructions
-[here](https://docs.anaconda.com/anaconda/install/index.html) If you have not already, please add the `conda-forge`
+[here](https://docs.anaconda.com/anaconda/install/index.html). If you have not already, please add the `conda-forge`
 channel to your database:
 ```bash
 $ conda config --add channels conda-forge
