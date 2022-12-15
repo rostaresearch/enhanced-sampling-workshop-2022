@@ -76,7 +76,7 @@ class DHAM:
             MM[:, :] = sumtr / np.sum(sumtr, axis=1)[:, None]
         return MM
 
-    def run(self, plot=True, adjust=True, biased=False, conversion=5E12):
+    def run(self, plot=True, adjust=True, biased=False, conversion=2E-13):
         """
 
         :param plot:
@@ -95,11 +95,11 @@ class DHAM:
         d, v = eig(np.transpose(MM))
         mpeq = v[:, np.where(d == np.max(d))[0][0]]
         mpeq = mpeq / np.sum(mpeq)
-        rate = np.float_(- self.lagtime / np.log(d[np.argsort(d)[-2]])) * conversion
+        rate = np.float_(- self.lagtime * conversion / np.log(d[np.argsort(d)[-2]]))
         mU2 = - self.KbT * np.log(mpeq)
         if adjust:
-            mU2 -= np.min(mU2[:int(self.numbins / 2)])
-        dG = np.max(mU2[:int(self.numbins / 2)])
+            mU2 -= np.min(mU2[:int(self.numbins)])
+        dG = np.max(mU2[:int(self.numbins)])
         A = rate / np.exp(- dG / self.KbT)
         x = qspace[:self.numbins] + (qspace[1] - qspace[0])
         if plot:
