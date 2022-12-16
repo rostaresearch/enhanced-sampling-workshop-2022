@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+#
+# A generic MD simulation proxy app.
+#
+
+import mdtraj as mdt
+from argparse import ArgumentParser
+from pathlib import Path
+import numpy as np
+import time
+
+parser = ArgumentParser()
+parser.add_argument('-c', '--starting_coordinates', type=Path, help='starting coordinates')
+parser.add_argument('-p', '--topology', type=Path,  help='topology file')
+parser.add_argument('-n', '--nsteps', type=int, help='number of MD steps')
+parser.add_argument('-r', '--final_coordinates', type=Path, help='final coordinates')
+
+args = parser.parse_args()
+if args.starting_coordinates.suffix in ['.pdb', '.gro']:
+    t = mdt.load(args.starting_coordinates)
+else:
+    t = mdt.load(args.starting_coordinates, top=args.topology)
+
+time.sleep(0.2) # slow it down a bit...
+dx = np.random.random((args.nsteps, t.n_atoms, 3)) * 0.5 - 1.0
+dx = dx.mean(axis=0) * 5.0
+xout = t.xyz[0] + dx
+tout = mdt.Trajectory(xout, t.topology)
+tout.save(args.final_coordinates)
