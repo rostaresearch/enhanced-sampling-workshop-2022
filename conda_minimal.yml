@@ -1,0 +1,17 @@
+name: workshop
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - numpy
+  - matplotlib
+  - openmm
+  - jupyter
+  - tqdm
+  - mdtraj
+  - seaborn
+  - scikit-learn
+  - cython
+  - pip:
+    - crossflow==0.1.1
