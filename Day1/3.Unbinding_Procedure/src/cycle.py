@@ -6,6 +6,7 @@ import numpy as np
 
 from src import pair
 from src import contact as cv
+from src.read_pdb import DCDnotReadable
 
 
 class Cycle:
@@ -19,7 +20,10 @@ class Cycle:
         self.contact = None
 
     def readDCD(self, top):
-        self.prevtraj = md.load("traj_{0:d}/traj_{0:d}.dcd".format(self.number - 1), top=top)
+        try:
+            self.prevtraj = md.load("traj_{0:d}/traj_{0:d}.dcd".format(self.number - 1), top=top)
+        except OSError:
+            raise DCDnotReadable
         return
 
     def saveNewDCD(self, stride):
