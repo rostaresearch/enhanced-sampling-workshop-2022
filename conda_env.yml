@@ -6,7 +6,7 @@ dependencies:
   - python=3.9
   - numpy
   - matplotlib
-  - openmm
+  - openmm=7.7.0
   - jupyter
   - tqdm
   - mdtraj
