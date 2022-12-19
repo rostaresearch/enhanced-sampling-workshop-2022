@@ -58,9 +58,9 @@ class DHAM:
         return
 
     def build_MM(self, sumtr, trvec, biased=False):
-        MM = np.empty(shape=sumtr.shape, dtype=np.float128)
+        MM = np.empty(shape=sumtr.shape, dtype=np.longdouble)
         if biased:
-            MM = np.zeros(shape=sumtr.shape, dtype=np.float128)
+            MM = np.zeros(shape=sumtr.shape, dtype=np.longdouble)
             qsp = self.qspace[1] - self.qspace[0]
             for i in range(sumtr.shape[0]):
                 for j in range(sumtr.shape[1]):
