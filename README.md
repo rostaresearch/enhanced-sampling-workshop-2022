@@ -34,3 +34,5 @@ If you have not already, you can add the `conda-forge` channel to your database:
 ```bash
 $ conda config --add channels conda-forge
 ```
+
+Please provide feedback at https://forms.gle/WVkzaqHPtRh34Yvw7
