@@ -80,7 +80,7 @@ def ADROP(data, ans, model, drop_mode="Average", data_mode="Normal"):
 
 
 
-def MLTSA_ADROP_Plot(FR, dataset_og, pots, errorbar=True):
+def MLTSA_ADROP_Plot(FR, dataset_og, pots, corr_thresh=30, errorbar=True):
     """
     Wrapper for plotting the results from the Accuracy Drop procedure
     :param FR: Values from the feature reduction
@@ -132,7 +132,7 @@ def MLTSA_ADROP_Plot(FR, dataset_og, pots, errorbar=True):
         #         plt.annotate("{:.2f}".format(corr),
         #                      (correlated_feat, dat[correlated_feat]),
         #                     fontsize=12, fontstyle="italic", fontweight="medium")
-        if corr > 30:
+        if corr > corr_thresh:
             plt.text(correlated_feat + 6, dat[correlated_feat] - 0.005, "{:.2f}".format(corr),
                      bbox=dict(facecolor='white', edgecolor='black', boxstyle='round'),
                      fontstyle="italic", fontweight="medium"

@@ -112,7 +112,7 @@ class Unbinding:
                     discard.append(self.pairs[self.cycle - 2].index(oldpair))
                     self.writeOutput(
                         """Distance with id {0:02d} is excluded since the the avarage distance
-                        in the last quarter ot the simulation is {1:.2f} A""".format(
+                        in the last quarter of the simulation is {1:.2f} A""".format(
                             oldpair.ID, 10 * np.mean(dist[-int(len(dist) / 4):])))
             for oldpair in self.pairs[self.cycle - 2]:
                 if self.pairs[self.cycle - 2].index(oldpair) in discard:
