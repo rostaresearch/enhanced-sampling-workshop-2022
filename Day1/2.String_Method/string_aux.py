@@ -46,7 +46,8 @@ def generate_data(n_windows, Nstep, T, force, last_position, restraint_position,
             rr = np.random.rand(1, 1)
 
             if rr < fact:
-                last_position[:, i] = x, y
+                last_position[0, i] = x
+                last_position[1, i] = y
                 Elast[i] = Ecurrent
                 data[i, j, 0] = x
                 data[i, j, 1] = y
