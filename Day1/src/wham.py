@@ -136,11 +136,11 @@ class WHAM:
         projection_bins = create_bins(projection_colvar, numbins_q)
         colvar1_bins = create_bins(colvar1, numbins_q)
         colvar2_bins = create_bins(colvar2, numbins_q)
-        Pq12 = np.zeros(shape=numbins_q, dtype=np.float_)
-        Pq1 = np.zeros(shape=numbins_q, dtype=np.float_)
-        Pq2 = np.zeros(shape=numbins_q, dtype=np.float_)
-        Pq2d = np.zeros(shape=(numbins_q, numbins_q), dtype=np.float_)
-        PepPersim = np.zeros(shape=(numsims, numbins_q), dtype=np.float_)
+        Pq12 = np.zeros(shape=numbins_q, dtype=np.float64)
+        Pq1 = np.zeros(shape=numbins_q, dtype=np.float64)
+        Pq2 = np.zeros(shape=numbins_q, dtype=np.float64)
+        Pq2d = np.zeros(shape=(numbins_q, numbins_q), dtype=np.float64)
+        PepPersim = np.zeros(shape=(numsims, numbins_q), dtype=np.float64)
         for i in range(numsims):
             for j in range(datlength):
                 indq = np.digitize(projection_colvar[i, j], projection_bins) - 1
