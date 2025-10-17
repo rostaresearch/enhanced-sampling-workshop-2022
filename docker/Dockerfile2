@@ -1,0 +1,26 @@
+# Start with BioSim base image.
+ARG BASE_IMAGE=latest
+FROM ghcr.io/jimboid/biosim-jupyterhub-base:$BASE_IMAGE
+
+LABEL maintainer="James Gebbie-Rayet <james.gebbie@stfc.ac.uk>"
+
+# Switch to jovyan user.
+USER $NB_USER
+WORKDIR $HOME
+
+# Conda install packages
+RUN conda install numpy matplotlib openmm tqdm mdtraj seaborn scikit-learn cython
+
+# Pip install packages
+RUN pip3 install crossflow
+
+# Add all of the workshop files to the home directory
+COPY --chown=1000:100 . .
+RUN rm -rf Day1 conda_env.yml LICENSE README.md requirements.txt docker .git .github
+RUN mv Day2/* . && \
+    rm -r Day2 && \
+    mv  /home/jovyan/4.WE_Simulation_NaCl_HPC/fake_md /opt/conda/bin/ && \
+    chmod +x /opt/conda/bin/fake_md
+
+# Always finish with non-root user as a precaution.
+USER $NB_USER
