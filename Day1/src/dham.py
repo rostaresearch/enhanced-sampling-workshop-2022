@@ -19,7 +19,7 @@ def align(query, ref):
 def count_transitions(b, numbins, lagtime, endpt=None):
     if endpt is None:
         endpt = b
-    Ntr = np.zeros(shape=(b.shape[0], numbins, numbins), dtype=np.int)  # number of transitions
+    Ntr = np.zeros(shape=(b.shape[0], numbins, numbins), dtype=int)  # number of transitions
     for k in range(b.shape[0]):
         for i in range(lagtime, b.shape[1]):
             try:
