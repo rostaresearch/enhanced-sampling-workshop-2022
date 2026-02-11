@@ -28,8 +28,8 @@ def generate_data(n_windows, Nstep, T, force, last_position, restraint_position,
 
     for j in range(Nstep):
         for i in range(n_windows):
-            r = np.random.rand(1)
-            b = np.random.rand(1)
+            r = np.random.rand()
+            b = np.random.rand()
             u = -np.log(r)
             rho = sigma * np.sqrt(2.0 * u)
             theta = 2.0 * np.pi * b
@@ -77,12 +77,12 @@ def optimize_string(data_avg):
         Y = Y + (np.polyval(np.polyder(p[j]), X)) ** 2
 
     Y = np.sqrt(Y)
-    L = np.trapz(Y, X)  # Careful with this, it is counterintuitive
+    L = np.trapezoid(Y, X)  # Careful with this, it is counterintuitive
     Li = np.linspace(0, L, Nnew)
 
     flen = np.zeros(len(X))
     for ibig in range(1, len(X)):
-        flen[ibig] = np.trapz(Y[:ibig + 1], X[:ibig + 1])  # Careful with this, it is counterintuitive
+        flen[ibig] = np.trapezoid(Y[:ibig + 1], X[:ibig + 1])  # Careful with this, it is counterintuitive
 
     pt = np.zeros(Nnew).astype(int)
     for i in range(Nnew):

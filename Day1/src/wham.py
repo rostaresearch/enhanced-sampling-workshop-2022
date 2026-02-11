@@ -109,8 +109,34 @@ class WHAM:
                     print("The iteration started to diverge.")
                     break
             Fprog.append(Fx)
-            # print(change)
+            print(change)
         self.Fprog = Fprog
+        return
+
+    def project_alpha(self, alpha):
+        """
+        The string coordinate for the path, _alpha_ needs to be (n, ncv)
+        e.g. the last string, or use optsring to define _n_ windows
+        """
+        numbins = alpha.shape[0]
+        numsims = self.data.shape[0]
+        datlength = self.data.shape[1]
+        b = np.empty((numsims, datlength))
+        for i in range(numsims):
+            for j in range(datlength):
+                b[i, j] = np.argmin(np.linalg.norm(alpha - self.data[i, j, :], axis=1))
+        if self.denom is None:
+            self.calc_denom()
+        PpS = np.empty(shape=(numsims, numbins))
+        for i in range(numbins):
+            md = np.ma.masked_array(self.denom, mask=~(b == i))
+            # P[i] = np.ma.sum(md)
+            PpS[:, i] = np.ma.sum(md, axis=1)
+        P = np.sum(PpS, axis=0)
+        profile = -self.KbT * np.log(P)
+        valu = np.min(profile[:int(numbins / 2)])
+        self.profile = profile - valu
+        self.profilePerSim = -self.KbT * np.log(PpS) - valu
         return
 
     def project_1d(self, cv, numbins_q=50):
@@ -136,11 +162,11 @@ class WHAM:
         projection_bins = create_bins(projection_colvar, numbins_q)
         colvar1_bins = create_bins(colvar1, numbins_q)
         colvar2_bins = create_bins(colvar2, numbins_q)
-        Pq12 = np.zeros(shape=numbins_q, dtype=np.float_)
-        Pq1 = np.zeros(shape=numbins_q, dtype=np.float_)
-        Pq2 = np.zeros(shape=numbins_q, dtype=np.float_)
-        Pq2d = np.zeros(shape=(numbins_q, numbins_q), dtype=np.float_)
-        PepPersim = np.zeros(shape=(numsims, numbins_q), dtype=np.float_)
+        Pq12 = np.zeros(shape=numbins_q, dtype=np.float64)
+        Pq1 = np.zeros(shape=numbins_q, dtype=np.float64)
+        Pq2 = np.zeros(shape=numbins_q, dtype=np.float64)
+        Pq2d = np.zeros(shape=(numbins_q, numbins_q), dtype=np.float64)
+        PepPersim = np.zeros(shape=(numsims, numbins_q), dtype=np.float64)
         for i in range(numsims):
             for j in range(datlength):
                 indq = np.digitize(projection_colvar[i, j], projection_bins) - 1
